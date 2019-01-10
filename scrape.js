@@ -1,7 +1,6 @@
 require('request')
 const request = require('request-promise')
 const cheerio = require('cheerio')
-const qs = require('querystring')
 
 const user = 't h u n d e r m a x'
 
@@ -34,10 +33,10 @@ async function login(username, password) {
 function parseAndReturnData(html) {
   const dom = cheerio.load(html)
   const selector = '#contentBody table tr.userRankRow td'
-  
+
   const data = {}
   const cols = ['Rank', 'Name', 'Wins', 'Losses', 'W/L', 'Kills', 'Deaths', 'K/D', 'Games PLayed', 'AverageScore']
-  
+
   dom(selector).each((i, elem) => {
     data[cols[i]] = dom(elem).text()
   })
@@ -53,4 +52,6 @@ async function run() {
   return data
 }
 
-run()
+module.exports = {
+  run
+}
