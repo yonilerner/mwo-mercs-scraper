@@ -6,8 +6,6 @@ exports.handler = async (event) => {
     const playerData = await scrape(players)
 
     await saveStats(playerData)
-    await saveStats(playerData)
-    await saveStats(playerData)
 
     const response = {
         statusCode: 200,
