@@ -47,7 +47,7 @@ function parseAndReturnData(html) {
     const selector = '#contentBody table tr.userRankRow td'
 
     const data = {}
-    const cols = ['Rank', 'Name', 'Wins', 'Losses', 'W/L', 'Kills', 'Deaths', 'K/D', 'Games Played', 'AverageScore']
+    const cols = ['Rank', 'Name', 'Wins', 'Losses', 'W/L', 'Kills', 'Deaths', 'K/D', 'GamesPlayed', 'AverageScore']
 
     dom(selector).each((i, elem) => {
         data[cols[i]] = dom(elem).text()
