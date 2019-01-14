@@ -32,7 +32,7 @@ async function disconnect(conn) {
 
 async function query(sql, params) {
     const conn = await connect()
-    await new Promise(((resolve, reject) => {
+    const ret = await new Promise(((resolve, reject) => {
         conn.query(sql, params, (error, results, fields) => {
             if (error) {
                 reject(error)
@@ -42,6 +42,7 @@ async function query(sql, params) {
         })
     }))
     await disconnect(conn)
+    return ret
 }
 
 process.on('unhandledRejection', e => {
@@ -50,9 +51,22 @@ process.on('unhandledRejection', e => {
 })
 
 async function getPlayers() {
-    return [
-        {djo_id: 66143, mwomercs_name: 't h u n d e r m a x'}
-    ]
+    return query(`
+    SELECT
+        master.id AS djo_id,
+        bios.im_mwo AS mwomercs_name
+    FROM
+        access
+        JOIN
+            master
+            ON access.player_id = master.id
+        LEFT JOIN bios
+            ON master.id = bios.player_id
+    WHERE
+        bios.im_mwo != ''
+        AND access.status = 'Active'
+    GROUP BY master.id
+    `)
 }
 
 /*

@@ -4,11 +4,23 @@ const cheerio = require('cheerio')
 
 const {email, password} = require('./globals')
 
-const getUrl = name => `https://mwomercs.com/profile/leaderboards/quickplay?type=0&user=${encodeURIComponent(name)}`
+const mechTypes = {
+    Global: 0,
+    Light: 1,
+    Medium: 2,
+    Heavy: 3,
+    Assault: 4
+}
+Object.keys(mechTypes).forEach(key => {
+    mechTypes[mechTypes[key]] = key
+})
 
-async function getUserPage(user) {
+const getUrl = (name, type) =>
+    `https://mwomercs.com/profile/leaderboards/quickplay?type=${type}&user=${encodeURIComponent(name)}`
+
+async function getUserPage(user, type) {
     const response = await request({
-        url: getUrl(user),
+        url: getUrl(user, type),
         gzip: true,
         jar: true
     })
@@ -44,6 +56,33 @@ function parseAndReturnData(html) {
     return data
 }
 
+async function downloadAndParsePage(user, type) {
+    console.log(`Downloading ${mechTypes[type]} for ${user}`)
+    return parseAndReturnData(await getUserPage(user, type))
+}
+
+const DELAY_TIME = 2000
+async function delayIfDelay(delay = true) {
+    if (delay) {
+        await sleep(DELAY_TIME)
+    }
+}
+
+async function getDataForAllTypes(user, delay = true) {
+    const data = {}
+    await delayIfDelay(delay)
+    data.Global = await downloadAndParsePage(user, mechTypes.Global)
+    await delayIfDelay(delay)
+    data.Light = await downloadAndParsePage(user, mechTypes.Light)
+    await delayIfDelay(delay)
+    data.Medium = await downloadAndParsePage(user, mechTypes.Medium)
+    await delayIfDelay(delay)
+    data.Heavy = await downloadAndParsePage(user, mechTypes.Heavy)
+    await delayIfDelay(delay)
+    data.Assault = await downloadAndParsePage(user, mechTypes.Assault)
+    return data
+}
+
 async function sleep(ms) {
     return new Promise(res => {
         setTimeout(function () {
@@ -58,8 +97,7 @@ async function scrape(players) {
     const playerData = []
     for (let i = 0; i < players.length; i++) {
         const player = players[i]
-        const page = await getUserPage(player.mwomercs_name)
-        const data = await parseAndReturnData(page)
+        const data = await getDataForAllTypes(player.mwomercs_name, true)
         playerData.push({djo_id: player.djo_id, data})
     }
 
