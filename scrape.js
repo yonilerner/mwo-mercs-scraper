@@ -3,6 +3,7 @@ const request = require('request-promise')
 const cheerio = require('cheerio')
 
 const {email, password} = require('./globals')
+const {saveStats} = require('./djo-db')
 
 const mechTypes = {
     Global: 0,
@@ -19,12 +20,11 @@ const getUrl = (name, type) =>
     `https://mwomercs.com/profile/leaderboards/quickplay?type=${type}&user=${encodeURIComponent(name)}`
 
 async function getUserPage(user, type) {
-    const response = await request({
+    return request({
         url: getUrl(user, type),
         gzip: true,
         jar: true
     })
-    return response
 }
 
 async function login(username, password) {
@@ -61,7 +61,7 @@ async function downloadAndParsePage(user, type) {
     return parseAndReturnData(await getUserPage(user, type))
 }
 
-const DELAY_TIME = 2000
+const DELAY_TIME = 1500
 async function delayIfDelay(delay = true) {
     if (delay) {
         await sleep(DELAY_TIME)
@@ -91,19 +91,17 @@ async function sleep(ms) {
     })
 }
 
-async function scrape(players) {
+async function scrapeAndSave(players) {
     await login(email, password)
 
-    const playerData = []
     for (let i = 0; i < players.length; i++) {
         const player = players[i]
         const data = await getDataForAllTypes(player.mwomercs_name, true)
-        playerData.push({djo_id: player.djo_id, data})
-    }
 
-    return playerData
+        await saveStats([{djo_id: player.djo_id, data}])
+    }
 }
 
 module.exports = {
-    scrape
+    scrapeAndSave
 }

@@ -78,6 +78,7 @@ data: data from API
 ]
  */
 async function saveStats(players) {
+    console.log(`Saving stags for ${players.map(p => p.djo_id).join(', ')}`)
     let sql = `
     INSERT INTO gameapis_mwo_mwomercs
     (djo_id, last_updated, data) VALUES

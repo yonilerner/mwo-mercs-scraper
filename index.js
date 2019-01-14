@@ -1,18 +1,16 @@
-const {scrape} = require('./scrape')
-const {getPlayers, saveStats} = require('./djo-db')
+const {scrapeAndSave} = require('./scrape')
+const {getPlayers} = require('./djo-db')
 
-exports.handler = async (event) => {
+exports.handler = async () => {
     const players = await getPlayers()
-    const playerData = await scrape(players)
+    await scrapeAndSave(players)
 
-    await saveStats(playerData)
-
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify(playerData),
-    };
-    console.log(response)
-    return response;
+    return {
+        statusCode: 200
+    }
 };
 
 exports.handler()
+    .catch(e => {
+        console.error(e)
+    })
