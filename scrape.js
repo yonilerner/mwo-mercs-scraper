@@ -70,16 +70,14 @@ async function delayIfDelay(delay = true) {
 
 async function getDataForAllTypes(user, delay = true) {
     const data = {}
-    await delayIfDelay(delay)
-    data.Global = await downloadAndParsePage(user, mechTypes.Global)
-    await delayIfDelay(delay)
-    data.Light = await downloadAndParsePage(user, mechTypes.Light)
-    await delayIfDelay(delay)
-    data.Medium = await downloadAndParsePage(user, mechTypes.Medium)
-    await delayIfDelay(delay)
-    data.Heavy = await downloadAndParsePage(user, mechTypes.Heavy)
-    await delayIfDelay(delay)
-    data.Assault = await downloadAndParsePage(user, mechTypes.Assault)
+    for (const mechType in mechTypes) {
+        // Skip the reverse-indexed values
+        if (parseInt(mechType, 10) == mechType) {
+            continue
+        }
+        await delayIfDelay(delay)
+        data[mechType] = await downloadAndParsePage(user, mechTypes[mechType])
+    }
     return data
 }
 
