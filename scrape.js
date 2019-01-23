@@ -1,4 +1,5 @@
 require('request')
+const moment = require('moment')
 const request = require('request-promise')
 const cheerio = require('cheerio')
 
@@ -6,11 +7,11 @@ const {email, password} = require('./globals')
 const {saveStats} = require('./djo-db')
 
 const mechTypes = {
-    Global: 0,
-    Light: 1,
-    Medium: 2,
-    Heavy: 3,
-    Assault: 4
+    global: 0,
+    light: 1,
+    medium: 2,
+    heavy: 3,
+    assault: 4
 }
 Object.keys(mechTypes).forEach(key => {
     mechTypes[mechTypes[key]] = key
@@ -25,6 +26,11 @@ async function getUserPage(user, type) {
         gzip: true,
         jar: true
     })
+}
+
+function writeToLog(message) {
+    var current_time = moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss')
+    console.log(`${current_time}: ${message}`)
 }
 
 async function login(username, password) {
@@ -57,7 +63,7 @@ function parseAndReturnData(html) {
 }
 
 async function downloadAndParsePage(user, type) {
-    console.log(`Downloading ${mechTypes[type]} for ${user}`)
+    console.log(`Downloading ${mechTypes[type]} class stats for pilot: ${user}`)
     return parseAndReturnData(await getUserPage(user, type))
 }
 
@@ -96,10 +102,12 @@ async function scrapeAndSave(players) {
         const player = players[i]
         const data = await getDataForAllTypes(player.mwomercs_name, true)
 
-        await saveStats([{djo_id: player.djo_id, data}])
+        await saveStats([{djo_id: player.djo_id, djo_name: player.djo_name, data}])
     }
 }
 
 module.exports = {
-    scrapeAndSave
+    scrapeAndSave,
+    sleep,
+    writeToLog
 }

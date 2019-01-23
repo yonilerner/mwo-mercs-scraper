@@ -1,5 +1,5 @@
 const {DB_HOST, DB_PASS, DB_NAME, DB_USER} = require('./globals')
-
+const {writeToLog} = require('./scrape')
 
 async function connect() {
     const conn = require('mysql').createConnection({
@@ -54,6 +54,7 @@ async function getPlayers() {
     const rows = await query(`
 	SELECT
 	    master.id AS djo_id,
+        master.name AS djo_name,
 	    bios.im_mwo AS mwo_name,
 	    gameapis_mwo_players.mwo_name AS mwo_name_manual
 	FROM
@@ -68,7 +69,10 @@ async function getPlayers() {
 	WHERE
 	    (bios.im_mwo != '' OR gameapis_mwo_players.mwo_name != '')
 	    AND access.status = 'Active'
-	GROUP BY master.id
+	GROUP BY
+        master.id
+    ORDER BY
+        master.name
     `)
     rows.forEach(row => {
         if (row.mwo_name_manual) {
@@ -89,7 +93,8 @@ data: data from API
 ]
  */
 async function saveStats(players) {
-    console.log(`Saving stats for ${players.map(p => p.djo_id).join(', ')}`)
+    writeToLog(`Test 2`)
+    console.log(`Saving stats for ${players.map(p => `${p.djo_id} (${p.djo_name})`).join(',')}`)
     let sql = `
     INSERT INTO gameapis_mwo_mwomercs
     (djo_id, last_updated, data) VALUES
