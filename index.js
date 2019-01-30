@@ -1,16 +1,18 @@
-const {writeToLog, scrapeAndSave, sleep} = require('./scrape')
+const {scrapeAndSave} = require('./scrape')
 const {getPlayers} = require('./djo-db')
+const {sleep, writeToLog} = require('./util')
+const fs = require('fs')
 
 exports.handler = async () => {
-    /// THIS IS WHAT WE WANT TO LOOP
+    /// Program Loop
     while (true) {
-        writeToLog(`Test 1`)
-        console.log(`Starting MWO Mercs scrape`)
+        fs.writeFileSync('mwomercs-scraper.log', '')
+        writeToLog(`Starting MWO Mercs scrape`)
         const players = await getPlayers()
         await scrapeAndSave(players)
-        console.log(`End of MWO Mercs scrape`)
+        writeToLog(`End of MWO Mercs scrape`)
         await sleep(1000)
-        console.log(`Resting for 20 minutes...`)
+        writeToLog(`Resting for 20 minutes...`)
         await sleep(1199000)
     }
 

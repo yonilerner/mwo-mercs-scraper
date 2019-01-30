@@ -1,5 +1,5 @@
 const {DB_HOST, DB_PASS, DB_NAME, DB_USER} = require('./globals')
-const {writeToLog} = require('./scrape')
+const {writeToLog} = require('./util')
 
 async function connect() {
     const conn = require('mysql').createConnection({
@@ -93,8 +93,7 @@ data: data from API
 ]
  */
 async function saveStats(players) {
-    writeToLog(`Test 2`)
-    console.log(`Saving stats for ${players.map(p => `${p.djo_id} (${p.djo_name})`).join(',')}`)
+    writeToLog(`Saving stats for ${players.map(p => `${p.djo_id} (${p.djo_name})`).join(',')}`)
     let sql = `
     INSERT INTO gameapis_mwo_mwomercs
     (djo_id, last_updated, data) VALUES

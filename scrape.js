@@ -1,7 +1,7 @@
 require('request')
-const moment = require('moment')
 const request = require('request-promise')
 const cheerio = require('cheerio')
+const {delayIfDelay, writeToLog} = require('./util')
 
 const {email, password} = require('./globals')
 const {saveStats} = require('./djo-db')
@@ -13,6 +13,7 @@ const mechTypes = {
     heavy: 3,
     assault: 4
 }
+
 Object.keys(mechTypes).forEach(key => {
     mechTypes[mechTypes[key]] = key
 })
@@ -26,11 +27,6 @@ async function getUserPage(user, type) {
         gzip: true,
         jar: true
     })
-}
-
-function writeToLog(message) {
-    var current_time = moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss')
-    console.log(`${current_time}: ${message}`)
 }
 
 async function login(username, password) {
@@ -63,15 +59,8 @@ function parseAndReturnData(html) {
 }
 
 async function downloadAndParsePage(user, type) {
-    console.log(`Downloading ${mechTypes[type]} class stats for pilot: ${user}`)
+    writeToLog(`Downloading ${mechTypes[type]} class stats for pilot: ${user}`)
     return parseAndReturnData(await getUserPage(user, type))
-}
-
-const DELAY_TIME = 1500
-async function delayIfDelay(delay = true) {
-    if (delay) {
-        await sleep(DELAY_TIME)
-    }
 }
 
 async function getDataForAllTypes(user, delay = true) {
@@ -87,14 +76,6 @@ async function getDataForAllTypes(user, delay = true) {
     return data
 }
 
-async function sleep(ms) {
-    return new Promise(res => {
-        setTimeout(function () {
-            res()
-        }, ms)
-    })
-}
-
 async function scrapeAndSave(players) {
     await login(email, password)
 
@@ -107,7 +88,5 @@ async function scrapeAndSave(players) {
 }
 
 module.exports = {
-    scrapeAndSave,
-    sleep,
-    writeToLog
+    scrapeAndSave
 }
