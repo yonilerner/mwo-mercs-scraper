@@ -4,7 +4,7 @@ const {sleep, writeToLog} = require('./util')
 const fs = require('fs')
 
 exports.handler = async () => {
-    /// Program Loop
+    // Program Loop
     while (true) {
         fs.writeFileSync('mwomercs-scraper.log', '')
         writeToLog(`Starting MWO Mercs scrape`)
@@ -15,13 +15,14 @@ exports.handler = async () => {
         writeToLog(`Resting for 20 minutes...`)
         await sleep(1199000)
     }
-
-    return {
-        statusCode: 200
-    }
 };
 
 exports.handler()
     .catch(e => {
-        console.error(e)
+        writeToLog(`ERROR: ${e.stack}`)
     })
+
+process.on('unhandledRejection', e => {
+    writeToLog(`Unhandled rejection: ${e.stack}`)
+    process.exit()
+})

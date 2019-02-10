@@ -1,9 +1,9 @@
 const DELAY_TIME = 1500
 const moment = require('moment')
 
-async function delayIfDelay(delay = true) {
-    if (delay) {
-        await sleep(DELAY_TIME)
+async function delayIfDelay(delay = DELAY_TIME) {
+    if (delay !== false) {
+        await sleep(delay)
     }
 }
 
@@ -15,13 +15,19 @@ async function sleep(ms) {
     })
 }
 
-function writeToLog(message) {
-    var timestamp = moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss')
-    console.log(`${timestamp}: ${message}`)
+function writeToLog(message, isError) {
+    const timestamp = moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss')
+    const msg = `${timestamp}: ${message}`
+    if (isError) {
+        console.error(msg)
+    } else {
+        console.log(msg)
+    }
 }
 
 module.exports = {
     delayIfDelay,
     sleep,
-    writeToLog
+    writeToLog,
+    DELAY_TIME
 }
