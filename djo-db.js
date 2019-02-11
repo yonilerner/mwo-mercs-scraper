@@ -45,27 +45,19 @@ async function query(sql, params) {
     return ret
 }
 
-process.on('unhandledRejection', e => {
-    console.error('Unhandled rejection', e)
-    process.exit()
-})
-
 async function getPlayers() {
     const rows = await query(`
 	SELECT
 	    master.id AS djo_id,
         master.name AS djo_name,
 	    bios.im_mwo AS mwo_name,
-	    gameapis_mwo_players.mwo_name AS mwo_name_manual
-	FROM
-	    access
-	    JOIN
-		master
-		ON access.player_id = master.id
-	    LEFT JOIN bios
-		ON master.id = bios.player_id
-	    LEFT JOIN gameapis_mwo_players
-		ON master.id = gameapis_mwo_players.djo_id
+	    gameapis_mwo_players.mwo_name AS mwo_name_manual,
+	    gameapis_mwo_mwomercs.last_updated
+	FROM access
+    LEFT JOIN master ON access.player_id = master.id
+    LEFT JOIN bios ON master.id = bios.player_id
+    LEFT JOIN gameapis_mwo_players ON master.id = gameapis_mwo_players.djo_id
+    LEFT JOIN gameapis_mwo_mwomercs ON master.id=gameapis_mwo_mwomercs.djo_id
 	WHERE
 	    (bios.im_mwo != '' OR gameapis_mwo_players.mwo_name != '')
 	    AND access.status = 'Active'
