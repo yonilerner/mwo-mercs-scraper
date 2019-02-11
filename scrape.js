@@ -7,11 +7,11 @@ const {email, password} = require('./globals')
 const {saveStats} = require('./djo-db')
 
 const mechTypes = {
-    global: 0,
-    light: 1,
-    medium: 2,
-    heavy: 3,
-    assault: 4
+    Global: 0,
+    Light: 1,
+    Medium: 2,
+    Heavy: 3,
+    Assault: 4
 }
 
 Object.keys(mechTypes).forEach(key => {
@@ -64,35 +64,39 @@ function parseAndReturnData(html) {
 }
 
 async function downloadAndParsePage(playerName, type) {
-    writeToLog(`Downloading ${mechTypes[type]} class stats for pilot: ${playerName}`)
+    writeToLog(`Searching ${mechTypes[type]} stats for pilot ${playerName}`)
     return parseAndReturnData(await getUserPage(playerName, type))
 }
 
 function dataWasReturned(data) {
-    return data.global && Object.keys(data.global).length !== 0
+    return data.Global && Object.keys(data.Global).length !== 0
 }
 
 async function getDataForAllTypes(playerName) {
     const data = {}
     let delay = DELAY_TIME
     // Try again if no data was fetched for the user
-    for (let i = 0; i < 2 && !dataWasReturned(data); i++) {
-        // The second time we try, try logging in again and increase the delay
-        if (i === 1) {
-            writeToLog(`Retrying for user ${playerName}`)
-            delay *= 2
-            delayIfDelay(delay)
-            await login()
+for (let i = 0; i < 2 && !dataWasReturned(data); i++) {
+    // The second time we try, try logging in again and increase the delay
+    if (i === 1) {
+        writeToLog(`Retrying for pilot ${playerName}`)
+        delay *= 2
+        await delayIfDelay(delay)
+        await login()
+    }
+    for (const mechType in mechTypes) {
+        // Skip the reverse-indexed values
+        if (parseInt(mechType, 10) == mechType) {
+            continue
         }
-        for (const mechType in mechTypes) {
-            // Skip the reverse-indexed values
-            if (parseInt(mechType, 10) == mechType) {
-                continue
-            }
-            await delayIfDelay(delay)
-            data[mechType] = await downloadAndParsePage(playerName, mechTypes[mechType])
+        await delayIfDelay(delay)
+        data[mechType] = await downloadAndParsePage(playerName, mechTypes[mechType])
+        if (!dataWasReturned(data)) {
+            writeToLog(`Failed to find stats for pilot ${playerName} (probably inactive)`)
+            break
         }
     }
+}
     return data
 }
 
@@ -118,9 +122,9 @@ async function scrapeAndSave(players) {
                 the reason there was no data is due to some scraping issue, and we avoid deleting their data
          */
         if (dataWasReturned(data) || !datesAreInSameMonth(new Date(), player.last_updated)) {
-            await saveStats([{djo_id: player.djo_id, djo_name: player.djo_name, data}])
+            await saveStats([{djo_id: player.djo_id, djo_name: player.djo_name, mwo_name: player.mwomercs_name, data}])
         } else {
-            writeToLog(`Couldnt get recent data for ${player.djo_id} (${player.mwomercs_name})`)
+            writeToLog(`Couldn't update stats for member ${player.djo_name} (${player.mwomercs_name})`)
         }
 
     }

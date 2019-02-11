@@ -85,7 +85,7 @@ data: data from API
 ]
  */
 async function saveStats(players) {
-    writeToLog(`Saving stats for ${players.map(p => `${p.djo_id} (${p.djo_name})`).join(',')}`)
+    writeToLog(`Updating stats for member ${players.map(p => `${p.djo_name} (${p.mwo_name})`).join(',')}`)
     let sql = `
     INSERT INTO gameapis_mwo_mwomercs
     (djo_id, last_updated, data) VALUES
