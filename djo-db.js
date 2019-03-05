@@ -47,21 +47,25 @@ async function query(sql, params) {
 
 async function getPlayers() {
     const rows = await query(`
-	SELECT
-	    master.id AS djo_id,
-        master.name AS djo_name,
-	    bios.im_mwo AS mwo_name,
-	    gameapis_mwo_players.mwo_name AS mwo_name_manual,
-	    gameapis_mwo_mwomercs.last_updated
-	FROM access
-    LEFT JOIN master ON access.player_id = master.id
-    LEFT JOIN bios ON master.id = bios.player_id
-    LEFT JOIN gameapis_mwo_players ON master.id = gameapis_mwo_players.djo_id
-    LEFT JOIN gameapis_mwo_mwomercs ON master.id=gameapis_mwo_mwomercs.djo_id
-	WHERE
-	    (bios.im_mwo != '' OR gameapis_mwo_players.mwo_name != '')
-	    AND access.status = 'Active'
-	GROUP BY
+    SELECT
+        master.id                     AS djo_id,
+        master.name                   AS djo_name,
+        bios.im_mwo                   AS mwo_name,
+        gameapis_mwo_players.mwo_name AS mwo_name_manual,
+        gameapis_mwo_mwomercs.last_updated,
+        access.club_id
+    FROM access
+        LEFT JOIN master ON access.player_id = master.id
+        LEFT JOIN bios ON master.id = bios.player_id
+        LEFT JOIN gameapis_mwo_players ON master.id = gameapis_mwo_players.djo_id
+        LEFT JOIN gameapis_mwo_mwomercs ON master.id = gameapis_mwo_mwomercs.djo_id
+        INNER JOIN club_games ON club_games.club_id=access.club_id
+        INNER JOIN new_clubs ON new_clubs.id=access.club_id
+    WHERE
+        (bios.im_mwo != '' OR gameapis_mwo_players.mwo_name != '')
+        AND access.status = 'Active' AND new_clubs.clubhide=0
+        AND club_games.game_id=399
+    GROUP BY
         master.id
     ORDER BY
         master.name
@@ -85,7 +89,7 @@ data: data from API
 ]
  */
 async function saveStats(players) {
-    writeToLog(`Updating stats for member ${players.map(p => `${p.djo_name} (${p.mwo_name})`).join(',')}`)
+    writeToLog(`Updating stats for member ${players.map(p => `${p.djo_name} (ID: ${p.djo_id})`).join(',')}`)
     let sql = `
     INSERT INTO gameapis_mwo_mwomercs
     (djo_id, last_updated, data) VALUES

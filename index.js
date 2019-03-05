@@ -12,7 +12,7 @@ exports.handler = async () => {
         await scrapeAndSave(players)
         writeToLog(`End of MWO Mercs scrape`)
         await sleep(1000)
-        writeToLog(`Resting for 20 minutes...`)
+        writeToLog(`Idling for 20 minutes...`)
         await sleep(1199000)
     }
 };

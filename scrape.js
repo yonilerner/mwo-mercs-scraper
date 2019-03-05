@@ -64,7 +64,7 @@ function parseAndReturnData(html) {
 }
 
 async function downloadAndParsePage(playerName, type) {
-    writeToLog(`Searching ${mechTypes[type]} stats for pilot ${playerName}`)
+    writeToLog(`Getting ${mechTypes[type]} stats for pilot ${playerName}`)
     return parseAndReturnData(await getUserPage(playerName, type))
 }
 
@@ -92,7 +92,7 @@ for (let i = 0; i < 2 && !dataWasReturned(data); i++) {
         await delayIfDelay(delay)
         data[mechType] = await downloadAndParsePage(playerName, mechTypes[mechType])
         if (!dataWasReturned(data)) {
-            writeToLog(`Failed to find stats for pilot ${playerName} (probably inactive)`)
+            writeToLog(`Failed to find stats for pilot ${playerName}, inactive?`)
             break
         }
     }
@@ -112,6 +112,9 @@ async function scrapeAndSave(players) {
     for (let i = 0; i < players.length; i++) {
         const player = players[i]
         const data = await getDataForAllTypes(player.mwomercs_name)
+        // Adjustment because seasons reset at 7PM CST, not midnight
+        let seasonResetTime = new Date();
+        seasonResetTime.setHours(seasonResetTime.getHours() + 5);
 
         /*
         Only save the data if:
@@ -121,10 +124,10 @@ async function scrapeAndSave(players) {
             - If the last time they were updated was in *this* month though, then we assume that
                 the reason there was no data is due to some scraping issue, and we avoid deleting their data
          */
-        if (dataWasReturned(data) || !datesAreInSameMonth(new Date(), player.last_updated)) {
-            await saveStats([{djo_id: player.djo_id, djo_name: player.djo_name, mwo_name: player.mwomercs_name, data}])
+        if (dataWasReturned(data) || !datesAreInSameMonth(seasonResetTime, player.last_updated)) {
+            await saveStats([{djo_id: player.djo_id, djo_name: player.djo_name, data}])
         } else {
-            writeToLog(`Couldn't update stats for member ${player.djo_name} (${player.mwomercs_name})`)
+            writeToLog(`Couldn't update stats for member ${player.djo_name} (ID: ${player.djo_id})`)
         }
 
     }
