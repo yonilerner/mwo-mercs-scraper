@@ -17,10 +17,35 @@ exports.handler = async () => {
     }
 };
 
-exports.handler()
-    .catch(e => {
-        writeToLog(`ERROR: ${e.stack}`)
-    })
+// exports.handler()
+//     .catch(e => {
+//         writeToLog(`ERROR: ${e.stack}`)
+//     })
+
+const aws = require('aws-sdk')
+
+const S3 = new aws.S3({
+    endpoint: 'http://localhost:9090',
+    // endpointDiscoveryEnabled: false,
+    s3ForcePathStyle: true,
+    // s3BucketEndpoint: false,
+    // stsRegionalEndpoints: 'legacy',
+    secretAccessKey: 'a',
+    accessKeyId: 'b',
+    // s3UsEast1RegionalEndpoint: 'legacy'
+});
+
+(async function() {
+    const params = {Bucket: 'bucket-1'}
+    let response = await S3.listObjectsV2(params).promise()
+    console.log(response.Contents)
+    await S3.putObject({...params, Key: 'foo', Body: 'bar'}).promise()
+    response = await S3.listObjectsV2(params).promise()
+    console.log(response.Contents)
+    await S3.deleteObject({...params, Key: 'foo'}).promise()
+    response = await S3.listObjectsV2(params).promise()
+    console.log(response.Contents)
+})()
 
 process.on('unhandledRejection', e => {
     writeToLog(`Unhandled rejection: ${e.stack}`)

@@ -18,10 +18,12 @@
   },
   "homepage": "https://github.com/yonilerner/mwomercs-scraper#readme",
   "dependencies": {
+    "aws-sdk": "^2.597.0",
     "cheerio": "^1.0.0-rc.2",
     "moment": "^2.24.0",
     "mysql": "^2.16.0",
     "request": "^2.88.0",
-    "request-promise": "^4.2.2"
+    "request-promise": "^4.2.2",
+    "spotify-web-api-node": "^4.0.0"
   }
 }
